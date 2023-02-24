@@ -9,13 +9,13 @@ SynthDef(\cymbool, {
         out=0,
         dur=1,
         gate=1,
-        hihatFreq=1113.49,
+        hihatFreq=1013.49,
         amp=0.5,
         pan=0,
         attack=0.005,
-        release=0.15,
-        highCut=9500.0,
-        decimate=0.1,
+        release=0.75,
+        highCut=2500.0,
+        decimate=0.5,
         wobble=0.1,
         spread=0.05;
 
@@ -43,7 +43,7 @@ SynthDef(\cymbool, {
     // Elektron style sample rate reduction / decimation
     sig = Decimator.ar(sig, decimate.linlin(0.0,1.0,SampleRate.ir, SampleRate.ir/16.0));
 
-    sig = LPF.ar(sig, highCut);
+    sig = LPF.ar(sig, highCut.clip(20.0, 18000.0));
     sig = sig * 0.125;
 
     Out.ar(out, Pan2.ar(sig, pan)*envs);

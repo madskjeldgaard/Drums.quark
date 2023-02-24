@@ -42,7 +42,7 @@ SynthDef(\qick, {
 
     DetectSilence.ar(in:sig, amp:0.0001, time:0.1, doneAction:2);
 
-    Out.ar(0, sig * amp);
+    Out.ar(0, sig * amp * 0.25);
 
 }).add;
 /*

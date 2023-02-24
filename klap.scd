@@ -14,13 +14,13 @@ SynthDef(\klap, {
         clapFreq = 1200.0,
         clapSpread=0.05, // Spacing between individual claps
         clapDur=0.5, // Overall clap duration
-        clapRq=0.50, // Lower number = more ringing
+        clapRq=0.45, // Lower number = more ringing
 
         verbAttack=0.0125,
         verbDecay=1.0,
-        verbDamp=0.25,
+        verbDamp=0.15,
         verbLowCut=100,
-        verbMix=0.66;
+        verbMix=0.5;
 
     var verbEnv, clapEnv, sig, verbSig, clapSig, numClaps;
 
@@ -58,11 +58,11 @@ SynthDef(\klap, {
     clapSig = clapSig.sum * numClaps.reciprocal;
 
     // ------------- MIX -----------------//
-    sig = XFade2.ar(inA:verbSig * 0.125, inB:clapSig * 2, pan:verbMix);
+    sig = XFade2.ar(inA:verbSig * 0.125, inB:clapSig * 2, pan:verbMix.linlin(0.0,1.0,-1.0,1.0));
 
     sig = Pan2.ar(sig, pan);
 
-    Out.ar(out, sig * amp);
+    Out.ar(out, sig * amp * 0.5);
 }).add;
 
 /*
