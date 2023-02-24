@@ -15,7 +15,7 @@ An oscillator based kick drum
         pan = 0,
         overtoneAmount=0.15,
         pitchEnvAmount=0.5,
-        mix=0.1;
+        mix=0.175;
 
         var sig, oscSig, noiseSig, envFreq, envelopedFreq, envelope, freqMin, freqMax, maxKickFreq, minKickFreq, overtone, freqs, noise, noiseEnv;
 
@@ -27,7 +27,7 @@ An oscillator based kick drum
         var env = Env(
             levels:[0.00001, 1.0, 0.1, 0.01, breathLevel, breathLevel, 0.0],
             times: [attack, release, 0.025, 0.1, breathRelease, 0.025].normalizeSum,
-            curve: [\lin, -10, \lin, 4, \lin, \lin]
+            curve: [\lin, -9, \lin, 4, \lin, \lin]
         );
 
         // Amp envelope
@@ -43,8 +43,8 @@ An oscillator based kick drum
             gate: gate,
             timeScale: dur,
             doneAction:0
-        ).linlin(
-            0.0,
+        ).linexp(
+            0.000001,
             1.0,
             freqMin,
             freqMax
@@ -56,8 +56,10 @@ An oscillator based kick drum
 
         switch(oscShape,
             \square, {
-                var cutoff = \cutoff.ar(100.0, spec: [20.0,20000.0,\exp]);
-                oscSig = PulseDPW.ar(freqs, mul: [1.0,overtoneAmount]).sum;
+                var cutoff = \cutoff.ar(250.0, spec: [20.0,20000.0,\exp]);
+                var pwmFreq = \pwmFreq.ar(0.5, spec: [0.0,100.0]);
+                var pwm = \pwm.ar(1.0, spec: [0.0,1.0]) * PulseDPW.ar(pwmFreq);
+                oscSig = PulseDPW.ar(freqs, width: pwm, mul: [1.0,overtoneAmount]).sum;
                 oscSig = LPF.ar(in:oscSig, freq:cutoff);
             },
             \tri,{
@@ -69,7 +71,7 @@ An oscillator based kick drum
                 oscSig = SinOsc.ar(freqs, mul: [1.0,overtoneAmount]).sum;
             },
             \fm, {
-                var modIndex = \modIndex.ar(1.5, spec: [0.0,10.0,\exp]);
+                var modIndex = \modIndex.ar(2.5383, spec: [0.0,10.0,\exp]);
                 oscSig = SinOsc.ar(freqs * SinOsc.ar(freqs * modIndex), mul: [1.0,overtoneAmount]).sum;
             }
         );
@@ -78,8 +80,8 @@ An oscillator based kick drum
 
         // --------- NOISE -------------------
         // noiseEnv = EnvGen.ar(Env.perc(attack, release), doneAction:0);
-        noiseEnv = envelope;
-        noise = LPF.ar(WhiteNoise.ar(0.1 * noiseEnv * noiseEnv), freq: 250);
+        noiseEnv = EnvGen.ar(envelope:env, timeScale:0.25);
+        noise = LPF.ar(WhiteNoise.ar(0.1 * noiseEnv * noiseEnv), freq: 1500);
 
         // ---------- MIX ---------------
         sig = XFade2.ar(
@@ -99,11 +101,11 @@ An oscillator based kick drum
 /*
 // Test
 Pbind(
-    \instrument, \xick_fm,
+    \instrument, \xick_sine,
     \dur, 0.5,
-    \kickFreq, 80,
+    \kickFreq, 50,
     \release, Pseg([0.1,1.0],16,\lin,inf),
-    \amp, 0.9
+    \amp, 0.5
 ).play(quant: 4);
 */
 
