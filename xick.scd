@@ -4,19 +4,19 @@ An oscillator based kick drum
 
 */
 (
-[\sine, \tri, \square, \fm].do{|oscShape|
+[\sine, \tri, \square, \fm, \fold].do{|oscShape|
     SynthDef(("xick_" ++ oscShape).asSymbol, {arg
         gate = 1,
         dur = 1,
-        amp = 0.2,
+        amp = 0.5,
         kickFreq = 80,
         attack=0.001,
         release=1.5,
         pan = 0,
-        overtoneAmount=0.325,
-        pitchEnvAmount=0.8,
+        overtoneAmount=0.525,
+        pitchEnvAmount=0.5,
         mix=0.275,
-        decimate=0.01;
+        decimate=0.0;
 
         var sig, oscSig, noiseSig, envFreq, envelopedFreq, envelope, freqMin, freqMax, maxKickFreq, minKickFreq, overtone, freqs, noise, noiseEnv;
 
@@ -74,6 +74,18 @@ An oscillator based kick drum
             \fm, {
                 var modIndex = \modIndex.ar(0.5383, spec: [0.0,10.0,\exp]);
                 oscSig = SinOsc.ar(freqs * SinOsc.ar(freqs * modIndex), mul: [1.0,overtoneAmount]).sum;
+            },
+            \fold, {
+                var foldGain = \foldGain.ar(0.10).linlin(0.0,1.0,1.0,20.0);
+                oscSig = SinOsc.ar(freqs, mul: [1.0,overtoneAmount]);
+                // NOTE: This is extremely processing intensive to not sum before the folder, but it sounds too damn good!
+                oscSig = LockhartWavefolder.ar(oscSig * (foldGain * [1.0,1.01]), numCells: 12).sum;
+            },
+            \foldfm, {
+                var foldGain = \foldGain.ar(0.90).linlin(0.0,1.0,1.0,20.0);
+                var modIndex = \modIndex.ar(0.6383, spec: [0.0,10.0,\exp]);
+                oscSig = SinOsc.ar(freqs * SinOsc.ar(freqs * modIndex), mul: [1.0,overtoneAmount]).sum;
+                oscSig = LockhartWavefolder.ar(oscSig * foldGain, numCells: 12);
             }
         );
 
@@ -96,7 +108,7 @@ An oscillator based kick drum
 
         Out.ar(0, sig * amp * 0.5);
     }
-).add;
+).load;
 
 };
 
@@ -104,10 +116,10 @@ An oscillator based kick drum
 // Test
 Pbind(
     \instrument, \xick_fm,
-    \dur, 0.5,
-    \kickFreq, 50,
-    \release, Pseg([0.1,1.0],16,\lin,inf),
-    \amp, 0.5
+    \delta, 0.5,
+    \kickFreq, 100,
+    \release, Pseg([0.1,2.0],16,\lin,inf),
+    \amp, 1.5
 ).play(quant: 4);
 */
 
